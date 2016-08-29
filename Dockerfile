@@ -9,7 +9,9 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 #Paso 2
 RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
-    git mercurial subversion
+    git mercurial subversion \
+    libssl-dev libssh-dev libgdal-dev libproj-dev libcairo-dev libcurl4-openssl-dev #Cambie esto porque me di cuenta que no funcionaba porque tenia el flag de --no-install-recommends 
+
 #Paso 3
 RUN apt-get install -y --no-install-recommends \
         ed \
@@ -100,7 +102,6 @@ RUN echo '' > /etc/apt/apt.conf.d/default
 #Paso 23
 RUN apt-get update
 #Paso 24
-RUN apt-get install -y --no-install- recommends libssl-dev libssh-dev libgdal-dev libproj-dev libcairo-dev libcurl4-openssl-dev
 #Install the r packages
 
 #Paso 25 Instalo los paquetes de R 
