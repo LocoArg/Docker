@@ -10,14 +10,15 @@ ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
 RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
     libglib2.0-0 libxext6 libsm6 libxrender1 \
     git mercurial subversion \
-    libssl-dev libssh-dev libgdal-dev libproj-dev libcairo-dev libcurl4-openssl-dev #Cambie esto porque me di cuenta que no funcionaba porque tenia el flag de --no-install-recommends 
+    libssl-dev libssh-dev libgdal-dev libproj-dev libcairo-dev libcurl4-openssl-dev nano mc
+    #Cambie esto porque me di cuenta que no funcionaba porque tenia el flag de --no-install-recommends
 
 #Paso 3
 RUN apt-get install -y --no-install-recommends \
         ed \
         less \
         locales \
-        vim-tiny 
+        vim-tiny
 #Paso 4 creo el usuario y la carpeta
 RUN useradd emiliano \
     && mkdir /home/emiliano \
@@ -38,10 +39,10 @@ RUN apt-get install -y curl grep sed dpkg && \
 
 
 #Paso 7
-    
+
 ENV PATH /opt/conda/bin:$PATH
 
-#Paso 8 Se instala Jupyter 
+#Paso 8 Se instala Jupyter
 
 RUN conda install jupyter -y
 
@@ -52,22 +53,19 @@ RUN apt-get install gcc -y
 
 RUN pip install https://github.com/ipython-contrib/jupyter_contrib_nbextensions/tarball/master
 #Paso 11
-RUN jupyter contrib nbextension install 
+RUN jupyter contrib nbextension install
 #Paso 12 como es miniconda no tiene instalado nada
 RUN conda install -c anaconda-nb-extensions nb_conda_kernels=1.0.3
 
 #Paso 13
-RUN cp /root/.jupyter/jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.bak
-#Paso 14
-RUN cp /opt/conda/etc/jupyter/jupyter_notebook_config.json /opt/conda/etc/jupyter/jupyter_notebook_config.bak
+RUN cp /root/.jupyter/jupyter_notebook_config.json /root/.jupyter/jupyter_notebook_config.bak && \
+ cp /opt/conda/etc/jupyter/jupyter_notebook_config.json /opt/conda/etc/jupyter/jupyter_notebook_config.bak
 #Paso 15
-RUN json='{ "NotebookApp": {"kernel_spec_manager_class": "nb_conda_kernels.CondaKernelSpecManager"}}'
+RUN json='{ "NotebookApp": {"kernel_spec_manager_class": "nb_conda_kernels.CondaKernelSpecManager"}}' && \
+    echo $json > /opt/conda/etc/jupyter/jupyter_notebook_config.json
 #Paso 16
-RUN echo $json > /opt/conda/etc/jupyter/jupyter_notebook_config.json
-#Paso 17
-RUN json2='{ "NotebookApp": { "nbserver_extensions": { "jupyter_nbextensions_configurator": true, "nbpresent":true, "nb_conda":true, "nb_anacondacloud":true }, "kernel_spec_manager_class":"nb_conda_kernels.CondaKernelSpecManager" } }'
-#Paso 18
-RUN echo $json2 > /root/.jupyter/jupyter_notebook_config.json
+RUN json2='{ "NotebookApp": { "nbserver_extensions": { "jupyter_nbextensions_configurator": true, "nbpresent":true, "nb_conda":true, "nb_anacondacloud":true }, "kernel_spec_manager_class":"nb_conda_kernels.CondaKernelSpecManager" } }' && \
+    echo $json2 > /root/.jupyter/jupyter_notebook_config.json
 
 #Instalamos R
 
@@ -103,17 +101,17 @@ RUN echo '' > /etc/apt/apt.conf.d/default
 RUN apt-get update
 #Paso 24
 #Install the r packages
-
-#Paso 25 Instalo los paquetes de R 
+RUN apt-get install libgdal-dev -y
+#Paso 25 Instalo los paquetes de R
 RUN install2.r --error \
     repr \
     IRdisplay \
     curl \
-    evaluate \ 
-    crayon \ 
-    pbdZMQ \ 
-    uuid \ 
-    digest \ 
+    evaluate \
+    crayon \
+    pbdZMQ \
+    uuid \
+    digest \
     devtools \
     dplyr \
     ggplot2 \
@@ -130,7 +128,7 @@ RUN install2.r --error \
     tufte \
     xml2 \
     ggmap \
-    rgdal  
+    rgdal
 
 
 #Paso 26
@@ -148,7 +146,7 @@ RUN echo "IRkernel::installspec(user=FALSE)" > setupIRkernel && Rscript setupIRk
  RUN pip install rpy2 geocoder
 #Paso 30
 # RUN pip install geocoder
-#Paso 31 
+#Paso 31
 #RUN apt-get upgrade -y
 #Paso 32
 #RUN apt-get autoremove -y; \
@@ -190,10 +188,6 @@ RUN conda install -y \
   statsmodels \
   && conda clean -tipsy
 
-COPY jupyter_notebook_config.json1 /root/.jupyter/jupyter_notebook_config.json
-
-COPY jupyter_notebook_config.json2 /opt/conda/etc/jupyter/jupyter_notebook_config.json 
+EXPOSE 8888
 
 ENTRYPOINT jupyter notebook --no-browser --ip=0.0.0.0 --port 8888 --notebook-dir=/home/emiliano
-
-
