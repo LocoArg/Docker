@@ -99,7 +99,7 @@ RUN \
 pip install https://github.com/ipython-contrib/jupyter_contrib_nbextensions/tarball/master
 
 USER $NB_USER
-RUN jupyter contrib nbextension install
+RUN jupyter contrib nbextension install --user
 USER root
 RUN conda install -c anaconda-nb-extensions nb_conda_kernels
 
