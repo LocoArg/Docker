@@ -138,9 +138,13 @@ WORKDIR /home/$NB_USER/work
 
 RUN \
  pip install pivottablejs
- 
+
 RUN \
  conda install -c damianavila82 rise
+
+RUN \
+ apt-get install -y pandoc
+
 USER $NB_USER
 #CMD /bin/bash
 CMD jupyter notebook --no-browser
