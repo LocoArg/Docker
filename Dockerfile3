@@ -144,7 +144,8 @@ RUN \
 
 RUN \
  apt-get install -y pandoc
-
+RUN \
+ apt-get install texlive-generic-recommended
 USER $NB_USER
 #CMD /bin/bash
 CMD jupyter notebook --no-browser
