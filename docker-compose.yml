@@ -1,0 +1,16 @@
+neo4j:
+  image: neo4j:latest
+  ports:
+    - "7474:7474"
+    - "1337:1337"
+  volumes:
+    - /data
+
+notebook:
+  image: emi/rpy2:v5
+  ports:
+    - "7000:8888"
+  links:
+    - neo4j:neo4j
+  volumes:
+    - d:/Archivos/Documentos:/home/emiliano/work
