@@ -1,0 +1,149 @@
+FROM ubuntu:17.10
+
+#En ves de usar el contenedor de continuumio/anaconda3 pongo todo en un archivo
+
+MAINTAINER Emiliano Chaves <chaves.emiliano@gmail.com>
+
+#Paso 1
+ENV LANG=C.UTF-8 LC_ALL=C.UTF-8
+#Paso 2
+RUN apt-get update --fix-missing && apt-get install -y wget bzip2 ca-certificates \
+    libglib2.0-0 libxext6 libsm6 libxrender1 \
+    git mercurial subversion \
+    libssl-dev libssh-dev libgdal-dev libproj-dev libcairo-dev libcurl4-openssl-dev nano mc
+    #Cambie esto porque me di cuenta que no funcionaba porque tenia el flag de --no-install-recommends
+
+#Paso 3
+RUN apt-get install -y --no-install-recommends \
+        ed \
+        less \
+        locales 
+#Paso 4 creo el usuario y la carpeta
+ENV SHELL /bin/bash
+  ENV NB_USER emiliano
+  ENV NB_UID 1000
+  
+
+  # Create user
+RUN useradd -m -s /bin/bash -N -u $NB_UID $NB_USER 
+
+#Paso 5 se instala Miniconda puede ser tambien Anaconda
+#RUN echo 'export PATH=/home/emiliano/conda/bin:$PATH' > /etc/profile.d/conda.sh && \
+ #   wget --quiet https://repo.continuum.io/archive/Anaconda3-4.4.0-Linux-x86_64.sh -O ~/anaconda.sh && \
+ #   /bin/bash ~/anaconda.sh -b -p /home/emiliano/conda
+    ##rm ~/miniconda.sh
+ADD anaconda.sh /home/emiliano/
+
+RUN cd /home/emiliano && \ 
+    chmod +x anaconda.sh && \
+    chown emiliano:users anaconda.sh
+
+USER $NB_USER
+RUN mkdir /home/$NB_USER/work && \
+cd /home/emiliano && \
+./anaconda.sh -b -p /home/emiliano/conda
+
+#Paso 6 se instala Tini para que funcione correctamente Jupyter
+USER root
+RUN apt-get install -y curl grep sed dpkg && \
+    TINI_VERSION=`curl https://github.com/krallin/tini/releases/latest | grep -o "/v.*\"" | sed 's:^..\(.*\).$:\1:'` && \
+    curl -L "https://github.com/krallin/tini/releases/download/v${TINI_VERSION}/tini_${TINI_VERSION}.deb" > tini.deb && \
+    dpkg -i tini.deb && \
+    rm tini.deb && \
+    apt-get clean
+
+
+#Paso 7
+ENV R_BASE_VERSION 3.4.0
+
+## Now install R and littler, and create a link for littler in /usr/local/bin
+## Also set a default CRAN repo, and make sure littler knows about it too
+#Paso 21
+RUN apt-get update \
+    && apt-get install  -y --no-install-recommends \
+        littler \
+                r-cran-littler \
+        r-base=${R_BASE_VERSION}* \
+        r-base-dev=${R_BASE_VERSION}* \
+        r-recommended=${R_BASE_VERSION}* \
+        && echo 'options(repos = c(CRAN = "https://cran.rstudio.com/"), download.file.method = "libcurl")' >> /etc/R/Rprofile.site \
+        && echo 'source("/etc/R/Rprofile.site")' >> /etc/littler.r \
+    && ln -s /usr/share/doc/littler/examples/install.r /usr/local/bin/install.r \
+    && ln -s /usr/share/doc/littler/examples/install2.r /usr/local/bin/install2.r \
+    && ln -s /usr/share/doc/littler/examples/installGithub.r /usr/local/bin/installGithub.r \
+    && ln -s /usr/share/doc/littler/examples/testInstalled.r /usr/local/bin/testInstalled.r \
+    && install.r docopt \
+    && rm -rf /tmp/downloaded_packages/ /tmp/*.rds \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV PATH /home/emiliano/conda/bin:$PATH
+
+USER root
+
+RUN install2.r --error \
+    repr \
+    IRdisplay \
+    curl \
+    evaluate \
+    crayon \
+    pbdZMQ \
+    uuid \
+    digest \
+    devtools \
+    dplyr \
+    ggplot2 \
+    ggthemes \
+    httr \
+    knitr \
+    revealjs \
+    tidyr \
+    servr \
+    shiny \
+    stringr \
+    svglite \
+    tibble \
+    tufte \
+    xml2 \
+    ggmap \
+    rgdal
+
+RUN R -e "devtools::install_github('IRkernel/IRkernel')" && \
+    R -e "IRkernel::installspec(user=FALSE)"
+
+
+
+USER $NB_USER
+
+#
+RUN echo 'PATH=/home/emiliano/conda/bin:/home/emiliano/conda/lib:$PATH' >> ~/.bashrc
+RUN /home/emiliano/conda/bin/pip install jupyter_contrib_nbextensions
+#RUN /home/emiliano/conda/bin/jupyter contrib nbextension install --sys-prefix
+RUN /home/emiliano/conda/bin/conda install -c anaconda-nb-extensions nb_conda_kernels
+#RUN echo "c.NotebookApp.ip = '*'" >> /home/emiliano/.jupyter/jupyter_notebook_config.py
+RUN pip install rpy2 pivottablejs
+RUN conda install -c damianavila82 rise 
+RUN jupyter-nbextension install rise --py --sys-prefix 
+RUN jupyter-nbextension enable rise --py --sys-prefix
+
+#Para arreglar el problema del tab conda que no esta actualizado el codigo y da error por diferencia entre una lista y un diccionario
+#RUN pip install git+https://github.com/Anaconda-Platform/nb_conda.git@d488d9e --upgrade
+#RUN echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/.jupyter/jupyter_notebook_config.py
+#RUN conda remove gcc libgcc --force -y
+
+USER root
+
+RUN apt-get update && apt-get install -y --no-install-recommends apt-utils
+#RUN apt-get install -y pandoc 
+#RUN apt-get install texlive-generic-recommended
+
+WORKDIR /home/$NB_USER/work
+
+USER $NB_USER
+RUN jupyter contrib nbextension install --sys-prefix
+RUN echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/conda/etc/jupyter/jupyter_notebook_config.py
+RUN cp ./conda/lib/python3.6/site-packages/jupyter_contrib_nbextensions/nbconvert_support/pre_pymarkdown.py ~/conda/lib/python3.6/
+RUN printf "c = get_config()\nExporter.preprocessors = ['pre_pymarkdown.PyMarkdownPreprocessor']" >> ~/conda/etc/jupyter/jupyter_nbconvert_config.py
+
+EXPOSE 8888
+
+

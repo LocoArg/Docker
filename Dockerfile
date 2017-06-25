@@ -190,4 +190,4 @@ RUN conda install -y \
 
 EXPOSE 8888
 
-ENTRYPOINT jupyter notebook --no-browser --ip=0.0.0.0 --port 8888 --notebook-dir=/home/emiliano
+ENTRYPOINT jupyter notebook --no-browser --ip=0.0.0.0 --port 8888 --notebook-dir=/home/emiliano/work

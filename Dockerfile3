@@ -108,7 +108,7 @@ RUN conda install -c anaconda-nb-extensions nb_conda_kernels
 # Run dev version of rpy2
 RUN \
   /opt/conda/bin/pip --no-cache-dir install \
-       https://bitbucket.org/rpy2/rpy2/get/version_2.8.x.tar.gz && \
+       https://bitbucket.org/rpy2/rpy2/get/version_2.8.6.tar.gz && \
   rm -rf /root/.cache
 
 USER root
@@ -148,7 +148,7 @@ RUN \
 RUN \
  apt-get install -y pandoc
 RUN \
- apt-get install texlive-generic-recommended
+ apt-get install -y texlive-generic-recommended
 USER $NB_USER
 #CMD /bin/bash
 CMD jupyter notebook --no-browser

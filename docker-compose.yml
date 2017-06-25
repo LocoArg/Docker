@@ -7,7 +7,7 @@ neo4j:
     - /data
 
 notebook:
-  image: emi/rpy2:v5
+  image: jupyter:latest
   ports:
     - "7000:8888"
   links:
