@@ -66,9 +66,9 @@ CMD ["/init"]
 
 
 #hay que agregar todo esto
-apt-get install texlive-latex-base
-apt-get --no-install-recommends install texlive-latex-base
-apt-get install lmodern
-apt-get install texlive-fonts-recommended
-apt-get --no-install-recommends install texlive-latex-extra
-para poder hacer los pdf con knith
+#apt-get install texlive-latex-base
+#apt-get --no-install-recommends install texlive-latex-base
+#apt-get install lmodern
+#apt-get install texlive-fonts-recommended
+#apt-get --no-install-recommends install texlive-latex-extra
+#para poder hacer los pdf con knith
