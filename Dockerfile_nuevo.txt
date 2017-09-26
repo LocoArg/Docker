@@ -54,7 +54,7 @@ RUN apt-get install -y curl grep sed dpkg && \
 
 
 #Paso 7
-ENV R_BASE_VERSION 3.4.0
+ENV R_BASE_VERSION 3.4.1
 
 ## Now install R and littler, and create a link for littler in /usr/local/bin
 ## Also set a default CRAN repo, and make sure littler knows about it too
@@ -141,9 +141,12 @@ WORKDIR /home/$NB_USER/work
 USER $NB_USER
 RUN jupyter contrib nbextension install --sys-prefix
 RUN echo "c.NotebookApp.ip = '*'" >> /home/$NB_USER/conda/etc/jupyter/jupyter_notebook_config.py
-RUN cp ./conda/lib/python3.6/site-packages/jupyter_contrib_nbextensions/nbconvert_support/pre_pymarkdown.py ~/conda/lib/python3.6/
-RUN printf "c = get_config()\nExporter.preprocessors = ['pre_pymarkdown.PyMarkdownPreprocessor']" >> ~/conda/etc/jupyter/jupyter_nbconvert_config.py
+#RUN cp ./conda/lib/python3.6/site-packages/jupyter_contrib_nbextensions/nbconvert_support/pre_pymarkdown.py ~/conda/lib/python3.6/
+#RUN printf "c = get_config()\nExporter.preprocessors = ['pre_pymarkdown.PyMarkdownPreprocessor']" >> ~/conda/etc/jupyter/jupyter_nbconvert_config.py
 
 EXPOSE 8888
+
+#CMD /bin/bash
+CMD jupyter notebook --no-browser
 
 
